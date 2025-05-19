@@ -3,7 +3,12 @@ const Ruta = require('../models/ruta.model');
 //Crear una nueva ruta
 const crearRuta = async (req, res) => {
   try {
-    const nuevaRuta = new Ruta(req.body);
+    const body = {
+      ...req.body,
+      usuarioId: req.usuario.id,
+      inicio: new Date(),
+    };
+    const nuevaRuta = new Ruta(body);
     const rutaGuardada = await nuevaRuta.save();
     res.status(201).json(rutaGuardada);
   } catch (error) {
@@ -73,9 +78,51 @@ const eliminarRuta = async (req, res) => {
   }
 };
 
+
+
+
+
+const checkinRuta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { puntoId } = req.body;
+    const ruta = await Ruta.findOne({ _id: id, usuarioId: req.usuario.id });
+    if (!ruta) return res.status(404).json({ mensaje: 'Ruta no encontrada' });
+
+    ruta.checkins.push({ puntoId });
+    await ruta.save();
+    res.json(ruta);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error en check-in' });
+  }
+};
+
+/**
+ * Marca la ruta como completada
+ */
+const completarRuta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ruta = await Ruta.findOne({ _id: id, usuarioId: req.usuario.id });
+    if (!ruta) return res.status(404).json({ mensaje: 'Ruta no encontrada' });
+
+    ruta.fin = new Date();
+    ruta.completada = true;
+    await ruta.save();
+    res.json(ruta);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al completar ruta' });
+  }
+};
+
 module.exports = {
   crearRuta,
   listarRutas,
   obtenerRuta,
   eliminarRuta,
+  checkinRuta,
+  completarRuta,
 };
+

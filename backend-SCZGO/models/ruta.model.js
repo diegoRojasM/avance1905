@@ -1,44 +1,29 @@
+// models/ruta.model.js
 const mongoose = require('mongoose');
 
 const rutaSchema = new mongoose.Schema({
-  nombreRuta: {
-    type: String,
-    required: [true, 'El nombre de la ruta es obligatorio'],
-  },
+  nombreRuta: { /* ... */ },
   puntos: [
     {
-      monumento: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Monumento',
-        required: true,
-      },
-      orden: {
-        type: Number,
-        required: true,
-      },
-      tiempoEstimado: {
-        type: Number, // minutos entre un punto y otro
-        required: true,
-      }
+      monumento: { type: mongoose.Schema.Types.ObjectId, ref: 'Monumento', required: true },
+      orden: { type: Number, required: true },
+      tiempoEstimado: { type: Number, required: true },
     }
   ],
-  duracionEstimada: {
-    type: Number, // duración total en minutos
-    required: true,
-  },
-  preferencias: {
-    type: [String], // ejemplo: ["histórico", "gastronómico"]
-    default: [],
-  },
-  usuarioId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: false, // opcional: para rutas guardadas por usuarios
-  },
-  fechaCreacion: {
-    type: Date,
-    default: Date.now,
-  }
-});
+  duracionEstimada: { type: Number, required: true },
+  preferencias: { type: [String], default: [] },
+  usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+  fechaCreacion: { type: Date, default: Date.now },
 
+  // --- nuevos campos ---
+  inicio: { type: Date },                        // cuando el usuario pulsa "Comenzar recorrido"
+  fin: { type: Date },                           // cuando marca completada la ruta
+  completada: { type: Boolean, default: false }, // false hasta que termine
+  checkins: [                                   // cada vez que llega a un punto
+    {
+      puntoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Monumento' },
+      llegada: { type: Date, default: Date.now },
+    }
+  ],
+});
 module.exports = mongoose.model('Ruta', rutaSchema);
